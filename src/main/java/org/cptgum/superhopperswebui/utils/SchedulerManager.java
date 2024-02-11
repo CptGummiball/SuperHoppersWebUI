@@ -13,11 +13,11 @@ public class SchedulerManager {
     }
 
     public void startScheduler() {
-        // Lese das Intervall aus der Konfiguration oder setze einen Standardwert
-        long interval = plugin.getConfig().getLong("Interval", 3600L); // Default: 1 Stunde
+        // Read the interval from the configuration or set a default value
+        long interval = plugin.getConfig().getLong("Interval", 3600L); // Default: 1 hour
 
-        // Plane den Task mit dem angegebenen Intervall
-        new FileGeneratorTask().runTaskTimer(plugin, 0L, interval * 20L); // Konvertiere Sekunden in Ticks
+        // Schedule the task at the specified interval
+        new FileGeneratorTask().runTaskTimer(plugin, 0L, interval * 20L); // Convert seconds to ticks
     }
 
     private class FileGeneratorTask extends BukkitRunnable {

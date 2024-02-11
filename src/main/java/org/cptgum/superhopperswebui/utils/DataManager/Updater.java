@@ -22,7 +22,7 @@ public class Updater {
     }
 
     public void updateConfig() {
-        int currentConfigVersion = plugin.getConfig().getInt("configversion", 0);
+        int currentConfigVersion = plugin.getConfig().getInt("versions.config", 0);
         File newConfigFile = getConfigFromJar();
 
         if (newConfigFile == null) {

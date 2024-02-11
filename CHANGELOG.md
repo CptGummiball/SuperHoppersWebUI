@@ -12,3 +12,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Basic framework for further development on the Java part
 - FileGenerator
 	- FileGenerator organizes and processes YAML files, creates folder structure and saves JSON output for each OwnerUUID. It also will be used for updating files.
+- Empty Templates
+- Item Icons

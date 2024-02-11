@@ -27,23 +27,6 @@ public class ConfigUtils {
         this.plugin = plugin;
     }
 
-    public void webConfigUpdater() {
-        // Load the configurations
-        JSONObject jsonConfig = loadJsonConfig();
-        FileConfiguration yamlConfig = getConfig();
-        FileConfiguration superHoppersConfig = getSuperHoppersConfig();
-
-        if (superHoppersConfig == null) {
-            return;  // Exit if VillagerMarket plugin not found or config not loaded
-        }
-
-        // Synchronize the values of the configurations
-        syncValues(yamlConfig, jsonConfig, superHoppersConfig);
-
-        // Save the updated JSON configuration
-        saveJsonConfig(jsonConfig);
-    }
-
     private JSONObject loadJsonConfig() {
         File configFile = new File(plugin.getDataFolder(), "/web/assets/config.json");
 
@@ -93,7 +76,6 @@ public class ConfigUtils {
         Plugin superHoppersPlugin = Bukkit.getPluginManager().getPlugin("SuperHoppers");
 
         if (superHoppersPlugin != null) {
-            LoggerUtils.logInfo("Hello SuperHoppers, I'm here! HUG!");
             return superHoppersPlugin.getConfig();
         } else {
             LoggerUtils.logWarning("SuperHoppers plugin not found");
