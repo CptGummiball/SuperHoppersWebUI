@@ -5,8 +5,8 @@ Port: 8080
 Language: en
 # Default language of the UI
 UILanguage: en
-# Update interval in ticks (20 ticks = 1 second)
-UpdateInterval: 6000
+# Update interval in seconds
+Interval: 6000
 
 
 #versions (don't touch)
