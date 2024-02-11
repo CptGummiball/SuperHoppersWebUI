@@ -21,8 +21,7 @@ public class FileGenerator {
         processYamlFiles();
     }
 
-    private static void processYamlFiles() {
-        // Durchsuche den Ordner "/plugins/SuperHoppers" nach .yml-Dateien
+    public static void processYamlFiles() {
         File superHoppersFolder = new File(PLUGIN_FOLDER);
         if (superHoppersFolder.exists() && superHoppersFolder.isDirectory()) {
             File[] yamlFiles = superHoppersFolder.listFiles((dir, name) -> name.endsWith(".yml"));
@@ -36,18 +35,12 @@ public class FileGenerator {
     }
 
     private static void processYamlFile(File yamlFile) {
-        // Lese OwnerUUID aus der YAML-Datei
         String ownerUUID = readOwnerUUIDFromYaml(yamlFile);
-
-        // Erzeuge den Zielordner im "/plugins/SuperHoppersWebUI/web"-Verzeichnis
+        String ownerName = readOwnerNameFromYaml(yamlFile);
         String webFolder = WEB_FOLDER + "/" + ownerUUID;
         createWebFolder(webFolder);
-
-        // Kopiere den Inhalt von "/web/template" in den Zielordner, wenn dieser nicht existiert
         copyTemplate(webFolder);
-
-        // Konvertiere YAML in JSON und schreibe es in die output.json-Datei im Zielordner
-        convertYamlToJson(yamlFile, webFolder + "/" + OUTPUT_FILE);
+        convertYamlToJson(yamlFile, webFolder + "/" + OUTPUT_FILE, ownerName);
     }
 
     private static String readOwnerUUIDFromYaml(File yamlFile) {
@@ -55,6 +48,17 @@ public class FileGenerator {
             Yaml yaml = new Yaml();
             Map<String, Object> yamlData = yaml.load(fis);
             return (String) yamlData.get("OwnerUUID");
+        } catch (IOException e) {
+            LoggerUtils.logError("Error reading YAML file: " + yamlFile.getName() + e);
+        }
+        return null;
+    }
+
+    private static String readOwnerNameFromYaml(File yamlFile) {
+        try (FileInputStream fis = new FileInputStream(yamlFile)) {
+            Yaml yaml = new Yaml();
+            Map<String, Object> yamlData = yaml.load(fis);
+            return (String) yamlData.get("OwnerName");
         } catch (IOException e) {
             LoggerUtils.logError("Error reading YAML file: " + yamlFile.getName() + e);
         }
@@ -96,7 +100,7 @@ public class FileGenerator {
         }
     }
 
-    private static void convertYamlToJson(File yamlFile, String outputFile) {
+    private static void convertYamlToJson(File yamlFile, String outputFile, String ownerName) {
         try (FileInputStream fis = new FileInputStream(yamlFile);
              BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
              FileWriter writer = new FileWriter(outputFile)) {
@@ -104,27 +108,27 @@ public class FileGenerator {
             Yaml yaml = new Yaml();
             Map<String, Object> yamlData = yaml.load(reader);
 
-            // Annahme: yamlData ist ein Map-Objekt
-            String jsonArray = convertMapToJsonArray(yamlData);
+            String jsonArray = convertMapToJsonArray(yamlData, ownerName);
 
-            // Schreibe das JSON-Array in die output.json-Datei
             writer.write(jsonArray);
         } catch (IOException e) {
             LoggerUtils.logError("Error converting YAML to JSON: " + e);
         }
     }
 
-    private static String convertMapToJsonArray(Map<String, Object> yamlData) {
-        // Annahme: YAML-Map enthält eine Liste von Objekten mit einem eindeutigen Schlüssel "id"
-        // Die JSON-Ausgabe könnte wie folgt aussehen:
-        // [{"id": "value1", "key1": "value1", "key2": "value2"}, {"id": "value2", "key1": "value3", "key2": "value4"}, ...]
+    private static String convertMapToJsonArray(Map<String, Object> yamlData, String ownerName) {
 
         StringBuilder jsonArrayBuilder = new StringBuilder("[");
         boolean firstEntry = true;
 
+        jsonArrayBuilder.append("{");
+        jsonArrayBuilder.append("\"OwnerUUID\": \"").append(yamlData.get("OwnerUUID")).append("\", ");
+        jsonArrayBuilder.append("\"OwnerName\": \"").append(ownerName).append("\", ");
+        jsonArrayBuilder.append("\"HopperData\": [");
+
         for (Map.Entry<String, Object> entry : yamlData.entrySet()) {
-            if (entry.getKey().equals("OwnerUUID")) {
-                continue; // Ignoriere den Schlüssel "OwnerUUID" im JSON-Array
+            if (entry.getKey().equals("OwnerUUID") || entry.getKey().equals("OwnerName")) {
+                continue;
             }
 
             if (!firstEntry) {
@@ -134,7 +138,7 @@ public class FileGenerator {
             }
 
             jsonArrayBuilder.append("{");
-            jsonArrayBuilder.append("\"id\": \"").append(entry.getKey()).append("\", ");
+            jsonArrayBuilder.append("\"HopperUUID\": \"").append(entry.getKey()).append("\", ");
 
             if (entry.getValue() instanceof Map) {
                 Map<String, Object> innerMap = (Map<String, Object>) entry.getValue();
@@ -149,11 +153,8 @@ public class FileGenerator {
             jsonArrayBuilder.append("}");
         }
 
-        jsonArrayBuilder.append("]");
+        jsonArrayBuilder.append("]}");
 
         return jsonArrayBuilder.toString();
     }
-
-    // Füge hier die Methode convertMapToJsonArray hinzu, um das Map-Objekt in ein JSON-Array umzuwandeln
-
 }
