@@ -39,6 +39,7 @@ config.yml
 
 ## WebUI
 The WebUI can be accessed via a web browser with the address `yourserverip:port/ownerUUID`
+You can also get a clickable link via ingame command `/sui`
 
 ## Contributing
 
