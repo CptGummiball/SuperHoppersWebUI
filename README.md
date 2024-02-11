@@ -36,6 +36,10 @@ Download the SuperHoppers plugin and follow the installation instructions.
 config.yml
 ````
 - Restart your server to apply the settings
+
+## WebUI
+The WebUI can be accessed via a web browser with the address `yourserverip:port/ownerUUID`
+
 ## Contributing
 
 We welcome contributions and feedback from the community. Feel free to open issues, submit pull requests, or reach out to the project maintainers.
