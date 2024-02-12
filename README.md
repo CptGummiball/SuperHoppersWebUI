@@ -30,10 +30,22 @@ Download the SuperHoppers plugin and follow the installation instructions.
 - Download the latest version of the SuperHoppersWebUI.jar file from the releases page.
 - Place it in the plugins folder of your Spigot server.
 - Start or restart your Spigot server.
-- Adjust settings such as server connection details, user preferences, and language selection in the configuration files.
+- Adjust settings such as server connection details, user preferences, and language selection in the configuration file:
 
 ````
-config.yml
+# Configuration file for SuperHoppersWebUI
+# Port for the web server
+Port: 8080
+# Default language of the plugin
+Language: en
+# Update interval in seconds
+Interval: 1800
+
+
+#versions (don't touch)
+versions:
+    config: 1
+    web: 1
 ````
 - Restart your server to apply the settings
 
