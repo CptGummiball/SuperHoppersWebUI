@@ -7,7 +7,7 @@
 SuperHoppers Web UI is a user-friendly web interface designed for the Spigot plugin [SuperHoppers](https://www.spigotmc.org/resources/superhoppers.97483/) created by [Bestem0r](https://github.com/Bestem0r). The primary goal of this project is to provide a simple and intuitive way for users to manage and monitor their Super Hoppers within the Minecraft server environment.
 ## Planned Features
 
-✅ **Live Data:** Real-time information to keep users updated on the status and performance of their Super Hoppers.
+✅ **Live Data:** Nearly Real-time information to keep users updated on the status and performance of their Super Hoppers.
 
 ✅ **Individual User Interfaces:** Each user gets a dedicated and personalized UI, ensuring a customized experience tailored to their specific Super Hopper configurations.
 
