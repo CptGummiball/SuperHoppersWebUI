@@ -9,17 +9,15 @@ SuperHoppers Web UI is a user-friendly web interface designed for the Spigot plu
 
 ✅ **Live Data:** Nearly Real-time information to keep users updated on the status and performance of their Super Hoppers.
 
-✅ **Individual User Interfaces:** Each user gets a dedicated and personalized UI, ensuring a customized experience tailored to their specific Super Hopper configurations.
-
 **Variable Width for Responsive Display:** The UI is designed to adapt to different screen sizes, ensuring a seamless and correct display on all devices.
 
 ✅ **Internal Web Server:** The project includes an internal web server to facilitate communication and data transfer between the Minecraft server and the web interface.
 
 **External Hosting:** Easily deploy the web interface on external hosting platforms for accessibility and convenience.
 
-✅ **Multi-Language Support:** Users can choose from multiple languages to enhance accessibility and user experience.
+**Multi-Language Support:** Users can choose from multiple languages to enhance accessibility and user experience.
 
-✅ **Item Icons:** Integrate icons for a visual representation of items, making it easier for users to identify and manage Super Hopper configurations.
+**Item Icons:** Integrate icons for a visual representation of items, making it easier for users to identify and manage Super Hopper configurations.
 ## Setup
 
 1. **Install SuperHoppers:**
@@ -50,7 +48,7 @@ versions:
 - Restart your server to apply the settings
 
 ## WebUI
-- The WebUI can be accessed via a web browser with the address `yourserverip:port/ownerUUID`
+- The WebUI can be accessed via a web browser with the address `yourserverip:port`
 - You can also get a clickable link via ingame command `/sui`
 
 ## Contributing
