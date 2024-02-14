@@ -1,160 +1,332 @@
 package org.cptgum.superhopperswebui.utils.DataManager;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Map;
+import java.util.*;
 
 import org.cptgum.superhopperswebui.utils.LoggerUtils;
 
 public class FileGenerator {
 
-    private static final String PLUGIN_FOLDER = "/plugins/SuperHoppers";
-    private static final String WEB_FOLDER = "/plugins/SuperHoppersWebUI/web";
-    private static final String TEMPLATE_FOLDER = "/web/template";
-    private static final String OUTPUT_FILE = "output.json";
-
     public static void main(String[] args) {
-        processYamlFiles();
+        generateOutputJson();
     }
 
-    public static void processYamlFiles() {
-        File superHoppersFolder = new File(PLUGIN_FOLDER);
-        if (superHoppersFolder.exists() && superHoppersFolder.isDirectory()) {
-            File[] yamlFiles = superHoppersFolder.listFiles((dir, name) -> name.endsWith(".yml"));
+    private static void generateOutputJson() {
+        try {
+        File itemFolder = new File("plugins/SuperHoppers/hoppers/item");
+        File mobFolder = new File("plugins/SuperHoppers/hoppers/mob");
 
-            if (yamlFiles != null) {
-                for (File yamlFile : yamlFiles) {
-                    processYamlFile(yamlFile);
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        processFolder(itemFolder, result, "item");
+        processFolder(mobFolder, result, "mob");
+
+        writeToJsonFile(result, "plugins/SuperHoppersWebUI/web/output.json");
+    } catch (Exception e) {
+        LoggerUtils.logError("Error while generating output.json" + e.getMessage());
+    }
+    }
+
+    private static void processFolder(File folder, List<Map<String, Object>> result, String hopperType) {
+        try {
+
+        File[] files = folder.listFiles((dir, name) -> name.endsWith(".yml"));
+        if (files != null) {
+            for (File file : files) {
+                if (file.isFile()) {
+                    processYaml(file, result, hopperType);
                 }
             }
         }
+        } catch (Exception e) {
+            LoggerUtils.logError("Error while processing hopper folders" + e.getMessage());
+        }
     }
 
-    private static void processYamlFile(File yamlFile) {
-        String ownerUUID = readOwnerUUIDFromYaml(yamlFile);
-        String ownerName = readOwnerNameFromYaml(yamlFile);
-        String webFolder = WEB_FOLDER + "/" + ownerUUID;
-        createWebFolder(webFolder);
-        copyTemplate(webFolder);
-        convertYamlToJson(yamlFile, webFolder + "/" + OUTPUT_FILE, ownerName);
-    }
-
-    private static String readOwnerUUIDFromYaml(File yamlFile) {
-        try (FileInputStream fis = new FileInputStream(yamlFile)) {
+    private static void processYaml(File file, List<Map<String, Object>> result, String hopperType) {
+        try {
             Yaml yaml = new Yaml();
-            Map<String, Object> yamlData = yaml.load(fis);
-            return (String) yamlData.get("OwnerUUID");
-        } catch (IOException e) {
-            LoggerUtils.logError("Error reading YAML file: " + yamlFile.getName() + e);
-        }
-        return null;
-    }
+            Map<String, Object> yamlData = yaml.load(FileReader(file));
 
-    private static String readOwnerNameFromYaml(File yamlFile) {
-        try (FileInputStream fis = new FileInputStream(yamlFile)) {
-            Yaml yaml = new Yaml();
-            Map<String, Object> yamlData = yaml.load(fis);
-            return (String) yamlData.get("OwnerName");
-        } catch (IOException e) {
-            LoggerUtils.logError("Error reading YAML file: " + yamlFile.getName() + e);
-        }
-        return null;
-    }
+            // Bereinige Strings und erstelle UUID
+            cleanAndProcessData(yamlData, hopperType);
 
-    private static void createWebFolder(String webFolder) {
-        Path path = Paths.get(webFolder);
-        if (!Files.exists(path)) {
-            try {
-                Files.createDirectories(path);
-            } catch (IOException e) {
-                LoggerUtils.logError("Error creating web folder: " + webFolder + e);
-            }
+            // Füge die bereinigten Daten zur Ergebnisliste hinzu
+            result.add(yamlData);
+        } catch (Exception e) {
+            LoggerUtils.logError("Error while processing yaml file" + e.getMessage());
         }
     }
 
-    private static void copyTemplate(String destinationFolder) {
-        Path sourcePath = Paths.get(PLUGIN_FOLDER + TEMPLATE_FOLDER);
-        Path destinationPath = Paths.get(destinationFolder);
-
-        if (Files.exists(sourcePath) && Files.isDirectory(sourcePath)) {
-            if (!Files.exists(destinationPath)) {
-                try {
-                    Files.createDirectories(destinationPath);
-                    Files.walk(sourcePath)
-                            .forEach(source -> {
-                                Path destination = destinationPath.resolve(sourcePath.relativize(source));
-                                try {
-                                    Files.copy(source, destination);
-                                } catch (IOException e) {
-                                    LoggerUtils.logError("Error copying template files: " + e);
-                                }
-                            });
-                } catch (IOException e) {
-                    LoggerUtils.logError("Error copying template files: " + e);
-                }
-            }
-        }
+    private static Reader FileReader(File file) throws IOException {
+        return new FileReader(file);
     }
 
-    private static void convertYamlToJson(File yamlFile, String outputFile, String ownerName) {
-        try (FileInputStream fis = new FileInputStream(yamlFile);
-             BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
-             FileWriter writer = new FileWriter(outputFile)) {
+    private static void cleanAndProcessData(Map<String, Object> data, String hopperType) {
+        try {
+            // Bereinige Strings
+            cleanString(data, "hopperName");
+            cleanStringList(data, "trusted");
+            cleanStringList(data, "void_filter");
 
-            Yaml yaml = new Yaml();
-            Map<String, Object> yamlData = yaml.load(reader);
+            // Entferne "hologram_entities"
+            LoggerUtils.logDebug("Removing hologram_entities for " + data.get("hopperName"));
+            data.remove("hologram_entities");
 
-            String jsonArray = convertMapToJsonArray(yamlData, ownerName);
+            // Setze hopperType
+            LoggerUtils.logDebug("Setting hopperType for " + data.get("hopperName"));
+            data.put("hopperType", hopperType);
 
-            writer.write(jsonArray);
-        } catch (IOException e) {
-            LoggerUtils.logError("Error converting YAML to JSON: " + e);
-        }
-    }
+            // Erstelle UUIDs
+            createUUID(data, "hopperUUID");
 
-    private static String convertMapToJsonArray(Map<String, Object> yamlData, String ownerName) {
+            // Bereinige filter_materials und storage_items
+            cleanFilterMaterials(data);
 
-        StringBuilder jsonArrayBuilder = new StringBuilder("[");
-        boolean firstEntry = true;
-
-        jsonArrayBuilder.append("{");
-        jsonArrayBuilder.append("\"OwnerUUID\": \"").append(yamlData.get("OwnerUUID")).append("\", ");
-        jsonArrayBuilder.append("\"OwnerName\": \"").append(ownerName).append("\", ");
-        jsonArrayBuilder.append("\"HopperData\": [");
-
-        for (Map.Entry<String, Object> entry : yamlData.entrySet()) {
-            if (entry.getKey().equals("OwnerUUID") || entry.getKey().equals("OwnerName")) {
-                continue;
-            }
-
-            if (!firstEntry) {
-                jsonArrayBuilder.append(", ");
+            if ("mob".equals(hopperType)) {
+                // Bereinige mob_storage_items
+                cleanMobStorageItems(data);
             } else {
-                firstEntry = false;
+                // Bereinige storage_items
+                cleanStorageItems(data);
+
+                // Füge "worth" und "total_worth" zu "storage_items" hinzu
+                addWorthToStorageItems(data);
+
+                // Füge "total_worth" für jedes einzelne Item hinzu
+                addTotalWorthToData(data);
+
+                // Füge "hopperWorth" hinzu
+                addHopperWorth(data);
             }
-
-            jsonArrayBuilder.append("{");
-            jsonArrayBuilder.append("\"HopperUUID\": \"").append(entry.getKey()).append("\", ");
-
-            if (entry.getValue() instanceof Map) {
-                Map<String, Object> innerMap = (Map<String, Object>) entry.getValue();
-                for (Map.Entry<String, Object> innerEntry : innerMap.entrySet()) {
-                    jsonArrayBuilder.append("\"").append(innerEntry.getKey()).append("\": \"").append(innerEntry.getValue()).append("\", ");
-                }
-            } else {
-                // Handle other data types if needed
-            }
-
-            jsonArrayBuilder.delete(jsonArrayBuilder.length() - 2, jsonArrayBuilder.length()); // Remove trailing comma
-            jsonArrayBuilder.append("}");
+        } catch (Exception e) {
+            LoggerUtils.logError("Error while processing data" + e.getMessage());
         }
+    }
 
-        jsonArrayBuilder.append("]}");
+    private static void cleanString(Map<String, Object> data, String key) {
+        try {
+            LoggerUtils.logDebug("Cleaning data for " + data.get("hopperName"));
+            if (data.containsKey(key)) {
+                Object value = data.get(key);
+                if (value instanceof String) {
+                    // Entferne Farbcodes und Sonderzeichen, inklusive "§"
+                    String cleanedValue = ((String) value).replaceAll("§.", "");
+                    data.put(key, cleanedValue);
+                }
+            }
+        } catch (Exception e) {
+            LoggerUtils.logError("Error while cleaning string" + e.getMessage());
+        }
+    }
 
-        return jsonArrayBuilder.toString();
+    private static void cleanStringList(Map<String, Object> data, String key) {
+        try {
+            LoggerUtils.logDebug("Cleaning " + key + " list for " + data.get("hopperName"));
+            if (data.containsKey(key)) {
+                Object value = data.get(key);
+                if (value instanceof List<?>) {
+                    List<String> stringList = (List<String>) value;
+                    List<String> cleanedList = new ArrayList<>();
+                    for (String str : stringList) {
+                    // Bereinige jeden String in der Liste
+                    String cleanedValue = str.replaceAll("[^a-zA-Z0-9]", "");
+                    cleanedList.add(cleanedValue);
+                }
+                data.put(key, cleanedList);
+                }
+            }
+        } catch (Exception e) {
+            LoggerUtils.logError("Error while cleaning string list" + e.getMessage());
+        }
+    }
+
+    private static void createUUID(Map<String, Object> data, String key) {
+        try {
+            LoggerUtils.logDebug("Creating UUID for " + data.get("hopperName"));
+            if (!data.containsKey(key)) {
+                // Erstelle eine neue UUID, da sie nicht in der YAML-Datei vorhanden ist
+                UUID uuid = UUID.randomUUID();
+                data.put(key, uuid.toString());
+            }
+        } catch (Exception e) {
+            LoggerUtils.logError("Error while creating UUID" + e.getMessage());
+        }
+    }
+
+    private static void cleanFilterMaterials(Map<String, Object> data) {
+        try {
+            LoggerUtils.logDebug("Cleaning filter_materials for " + data.get("hopperName"));
+            if (data.containsKey("filter_materials")) {
+                Object value = data.get("filter_materials");
+                if (value instanceof List<?>) {
+                    List<Map<String, Object>> filterMaterials = (List<Map<String, Object>>) value;
+                    List<String> cleanedFilterMaterials = new ArrayList<>();
+                    for (Map<String, Object> material : filterMaterials) {
+                        if (material.containsKey("type")) {
+                            cleanedFilterMaterials.add(material.get("type").toString());
+                        }
+                    }
+                    data.put("filter_materials", cleanedFilterMaterials);
+                }
+            }
+        } catch (Exception e) {
+            LoggerUtils.logError("Error while cleaning filter materials" + e.getMessage());
+        }
+    }
+
+    private static void cleanMobStorageItems(Map<String, Object> data) {
+        try {
+            LoggerUtils.logDebug("Cleaning mob_storage_items for " + data.get("hopperName"));
+            if ("mob".equals(data.get("hopperType")) && data.containsKey("storage_items")) {
+                Object value = data.get("storage_items");
+                if (value instanceof Map<?, ?>) {
+                    Map<String, Map<String, Object>> mobStorageItems = (Map<String, Map<String, Object>>) value;
+                    List<Map<String, Object>> cleanedMobStorageItems = new ArrayList<>();
+                    for (Map.Entry<String, Map<String, Object>> entry : mobStorageItems.entrySet()) {
+                        Map<String, Object> mobStorageItem = entry.getValue();
+                        if (mobStorageItem.containsKey("item")) {
+                            String mobType = (String) mobStorageItem.get("item");
+                            int amount = Integer.parseInt(mobStorageItem.get("amount").toString());
+                            Map<String, Object> cleanedItem = new HashMap<>();
+                            cleanedItem.put("amount", amount);
+                            cleanedItem.put("mob", mobType);
+                            cleanedMobStorageItems.add(cleanedItem);
+                        }
+                    }
+                    data.put("storage_items", cleanedMobStorageItems);
+                }
+            }
+        } catch (Exception e) {
+            LoggerUtils.logError("Error while cleaning mob storage items" + e.getMessage());
+        }
+    }
+
+    private static void cleanStorageItems(Map<String, Object> data) {
+        try {
+            LoggerUtils.logDebug("Cleaning storage_items for " + data.get("hopperName"));
+            if (data.containsKey("storage_items")) {
+                Object value = data.get("storage_items");
+                if (value instanceof Map<?, ?>) {
+                    Map<String, Map<String, Object>> storageItems = (Map<String, Map<String, Object>>) value;
+                    List<Map<String, Object>> cleanedStorageItems = new ArrayList<>();
+                    for (Map.Entry<String, Map<String, Object>> entry : storageItems.entrySet()) {
+                        Map<String, Object> storageItemData = entry.getValue();
+                        if (storageItemData.containsKey("item") && storageItemData.get("item") instanceof Map<?, ?>) {
+                            Map<String, Object> itemData = (Map<String, Object>) storageItemData.get("item");
+                            if (itemData.containsKey("type")) {
+                                Map<String, Object> cleanedItemData = new HashMap<>();
+                                cleanedItemData.put("amount", Integer.parseInt(storageItemData.get("amount").toString()));
+                                cleanedItemData.put("item", itemData.get("type").toString());
+                                cleanedStorageItems.add(cleanedItemData);
+                            }
+                        }
+                    }
+                    data.put("storage_items", cleanedStorageItems);
+                }
+            }
+        } catch (Exception e) {
+            LoggerUtils.logError("Error while cleaning storage items" + e.getMessage());
+        }
+    }
+
+    private static void addWorthToStorageItems(Map<String, Object> data) {
+        try {
+            LoggerUtils.logDebug("Adding worth to storage_items for " + data.get("hopperName"));
+            if (data.containsKey("storage_items")) {
+                Object value = data.get("storage_items");
+                if (value instanceof List<?>) {
+                    List<Map<String, Object>> storageItems = (List<Map<String, Object>>) value;
+                    for (Map<String, Object> storageItem : storageItems) {
+                        if (storageItem.containsKey("item")) {
+                            Object itemValue = storageItem.get("item");
+                            if (itemValue instanceof String) {
+                                String itemType = (String) itemValue;
+                                double worth = getItemWorth(itemType);
+                                storageItem.put("worth", worth);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LoggerUtils.logError("Error while adding worth to storage items" + e.getMessage());
+        }
+    }
+
+    private static double getItemWorth(String itemType) {
+        File lootFile = new File("plugins/SuperHoppers/loot.yml");
+        try {
+            LoggerUtils.logDebug("Reading loot.yml for " + itemType);
+            Yaml yaml = new Yaml();
+            Map<String, Map<String, Double>> lootData = yaml.load(new FileInputStream(lootFile));
+
+            if (lootData.containsKey("item_worth")) {
+                Map<String, Double> itemWorthMap = lootData.get("item_worth");
+                return itemWorthMap.getOrDefault(itemType, 0.0);
+            }
+        } catch (IOException e) {
+            LoggerUtils.logError("Error while reading loot.yml: " + e.getMessage());
+        }
+        return 0.0;
+    }
+
+    private static void addTotalWorthToData(Map<String, Object> data) {
+        try {
+            LoggerUtils.logDebug("Adding total worth to data for " + data.get("hopperName"));
+            if (data.containsKey("storage_items")) {
+                Object value = data.get("storage_items");
+                if (value instanceof List<?>) {
+                    List<Map<String, Object>> storageItems = (List<Map<String, Object>>) value;
+                    for (Map<String, Object> storageItem : storageItems) {
+                        if (storageItem.containsKey("worth") && storageItem.containsKey("amount")) {
+                            double itemWorth = (double) storageItem.get("worth");
+                            int amount = (int) storageItem.get("amount");
+                            double totalWorth = itemWorth * amount;
+                            storageItem.put("total_worth", totalWorth);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LoggerUtils.logError("Error while adding total worth to data" + e.getMessage());
+        }
+    }
+
+    private static void addHopperWorth(Map<String, Object> data) {
+        double hopperWorth = 0.0;
+        try {
+            LoggerUtils.logDebug("Adding hopper worth for " + data.get("hopperName"));
+            if (data.containsKey("storage_items")) {
+                Object value = data.get("storage_items");
+                if (value instanceof List<?>) {
+                    List<Map<String, Object>> storageItems = (List<Map<String, Object>>) value;
+                    for (Map<String, Object> storageItem : storageItems) {
+                        if (storageItem.containsKey("total_worth")) {
+                            double totalWorth = (double) storageItem.get("total_worth");
+                            hopperWorth += totalWorth;
+                        }
+                    }
+                }
+            }
+
+            data.put("hopperWorth", hopperWorth);
+        } catch (Exception e) {
+            LoggerUtils.logError("Error while adding hopper worth" + e.getMessage());
+        }
+    }
+
+    private static void writeToJsonFile(List<Map<String, Object>> dataList, String outputPath) {
+        try (FileWriter writer = new FileWriter(outputPath)) {
+            LoggerUtils.logDebug("Writing to JSON file: " + outputPath);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String jsonString = objectMapper.writeValueAsString(dataList);
+            writer.write(jsonString);
+        } catch (IOException e) {
+            LoggerUtils.logError("Error while writing to JSON file: " + e.getMessage());
+        }
     }
 }
