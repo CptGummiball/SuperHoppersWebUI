@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hopper Overview</title>
+  <style>
+    body {
+      background-color: #333;
+      color: #fff;
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      border: 1px solid #555;
+      padding: 15px;
+      margin: 20px;
+      background-color: #444;
+      border-radius: 5px;
+    }
+
+    #searchInput {
+      margin: 10px;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    .green {
+      color: green;
+    }
+
+    .red {
+      color: red;
+    }
+
+    .hopper-name {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .hopper-info {
+      margin-bottom: 20px;
+    }
+
+    .hopper-info p {
+      margin: 10px 0;
+      font-size: 18px;
+    }
+
+    .item-table {
+      margin-top: 20px;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    .item-table th, .item-table td {
+      border: 1px solid #555;
+      padding: 12px;
+      text-align: left;
+    }
+
+    .item-table th {
+      background-color: #666;
+    }
+
+    .item-icon {
+      width: 20px;
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<input type="text" id="searchInput" placeholder="Search by ownerName">
+
+<div id="hopperContainer"></div>
+
+<script>
+  const hopperContainer = document.getElementById('hopperContainer');
+  const searchInput = document.getElementById('searchInput');
+  let languageData;
+  let currencySymbol; // Neue Variable für das Währungssymbol
+
+  // Load language data from config.json
+  fetch('config.json')
+    .then(response => response.json())
+    .then(config => {
+      // Assume default language is 'en'
+      const lang = config.language || 'en';
+      currencySymbol = config.currency || '$'; // Währungssymbol aus der config.json
+      return fetch(`assets/language/${lang}.json`);
+    })
+    .then(response => response.json())
+    .then(data => {
+      languageData = data;
+      renderHoppers();
+    })
+    .catch(error => console.error('Error fetching language data:', error));
+
+  function translate(key) {
+    return languageData[key] || key;
+  }
+
+  function formatCurrency(amount) {
+    return `${currencySymbol}${amount}`;
+  }
+
+      function generateHopperHTML(hopper) {
+        const container = document.createElement('div');
+        container.classList.add('container');
+
+        const hopperName = document.createElement('div');
+        hopperName.classList.add('hopper-name');
+        hopperName.textContent = hopper.hopperName;
+        container.appendChild(hopperName);
+
+        const hopperInfo = document.createElement('div');
+        hopperInfo.classList.add('hopper-info');
+        hopperInfo.innerHTML = `
+          <p><strong>${translate('Hopper Type')}:</strong> ${hopper.hopperType}</p>
+          <p><strong>${translate('Owner')}:</strong> ${hopper.ownerName}</p>
+          <p><strong>${translate('Auto-sell')}:</strong>
+            <span class="${hopper['auto-sell'] ? 'green' : 'red'}">
+              ${hopper['auto-sell'] ? translate('YES') : translate('NO')}
+            </span>
+          </p>
+          <p><strong>${translate('Trusted')}:</strong> ${hopper['trust-all'] ? translate('ALL') : hopper.trusted.join(', ')}</p>
+          <p><strong>${translate('Filter Materials')}:</strong> ${hopper.filter_materials ? hopper.filter_materials.join(', ') : translate('None')}</p>
+          <p><strong>${translate('Void Filter')}:</strong> ${hopper.void_filter ? hopper.void_filter.join(', ') : translate('None')}</p>
+        `;
+        container.appendChild(hopperInfo);
+
+        if (hopper.hopperType === 'mob') {
+          const mobsTable = document.createElement('table');
+          mobsTable.classList.add('item-table');
+          mobsTable.innerHTML = `
+          <tr>
+              <th>${translate('Mob')}</th>
+              <th>${translate('Amount')}</th>
+          </tr>
+          `;
+
+          hopper.storage_items.forEach(item => {
+          const row = mobsTable.insertRow();
+
+          // Mob Name und Icon in derselben Zelle
+          const cellMob = row.insertCell(0);
+
+          // Füge das Icon neben dem Mob-Namen hinzu
+          const icon = document.createElement('img');
+          icon.src = `assets/mobs/${item.mob.toLowerCase()}.png`; // Annahme: Der Dateiname des Icons entspricht dem Mob-Namen
+          icon.alt = item.mob;
+          icon.className = 'item-icon';
+          cellMob.appendChild(icon);
+
+          // Füge den Mob-Namen hinzu
+          const mobName = document.createElement('span');
+          mobName.textContent = translate(item.mob);
+          cellMob.appendChild(mobName);
+
+          // Amount
+          const cellAmount = row.insertCell(1);
+          cellAmount.textContent = item.amount;
+          });
+
+          container.appendChild(mobsTable);
+        } else {
+          const itemsTable = document.createElement('table');
+          itemsTable.classList.add('item-table');
+          itemsTable.innerHTML = `
+            <tr>
+              <th>${translate('Item')}</th>
+              <th>${translate('Amount')}</th>
+              <th>${translate('Worth')}</th>
+              <th>${translate('Total Worth')}</th>
+            </tr>
+          `;
+
+          hopper.storage_items.forEach(item => {
+          const row = itemsTable.insertRow();
+          const cellItem = row.insertCell(0);
+          const cellAmount = row.insertCell(1);
+          const cellWorth = row.insertCell(2);
+          const cellTotalWorth = row.insertCell(3);
+
+          // Füge das Icon neben dem Item-Namen hinzu
+          const icon = document.createElement('img');
+          icon.src = `assets/items/${item.item.toLowerCase()}.png`; // Annahme: Der Dateiname des Icons entspricht dem Item-Namen
+          icon.alt = item.item;
+          icon.className = 'item-icon';
+          cellItem.appendChild(icon);
+
+          const itemName = document.createElement('span');
+          itemName.textContent = translate(item.item);
+          cellItem.appendChild(itemName);
+
+          cellAmount.textContent = item.amount;
+          cellWorth.textContent = formatCurrency(item.worth || 0);
+          cellTotalWorth.textContent = formatCurrency(item.total_worth || 0);
+          });
+
+          container.appendChild(itemsTable);
+
+          if (hopper.hopperType === 'item') {
+            const hopperWorth = document.createElement('p');
+            hopperWorth.innerHTML = `<strong>${translate('Hopper Worth')}:</strong> ${formatCurrency(hopper.hopperWorth)}`;
+            container.appendChild(hopperWorth);
+          }
+        }
+
+        return container;
+      }
+
+      function renderHoppers(filter = '') {
+        hopperContainer.innerHTML = '';
+
+        fetch('output.json')
+          .then(response => response.json())
+          .then(data => {
+            data
+              .filter(hopper => hopper.ownerName.toLowerCase().includes(filter.toLowerCase()))
+              .forEach(hopper => {
+                hopperContainer.appendChild(generateHopperHTML(hopper));
+              });
+          })
+          .catch(error => console.error('Error fetching data:', error));
+      }
+
+      searchInput.addEventListener('input', () => {
+        renderHoppers(searchInput.value);
+      });
+</script>
+
+</body>
+</html>

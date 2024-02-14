@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - DebugMode
 	- Outputs the FileGenerator process step by step in the console
 - More Webfiles
+- First index file added (just my template)
 
 ### Fixed
 
