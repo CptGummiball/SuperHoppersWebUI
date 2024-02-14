@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2024-02-14
+
+### Added
+
+- DebugLog
+	- Documents every process of the FileGenerator
+- DebugMode
+	- Outputs the FileGenerator process step by step in the console
+- More Webfiles
+
+### Fixed
+
+- FileGenerator
+	- Now creates a cleaner json with more relevant data (Item worth and more). Mob hoppers continued to only specify type and quantity
+- The plugin instance was loaded incorrectly, the problem has now been resolved
+- Translator and Config Sync are deactivated for now
+
 ## [Unreleased] - 2024-02-11
 
 ### Added
