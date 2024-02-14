@@ -55,7 +55,6 @@ public class ConfigUtils {
         // Set the values in the JSON config
         jsonObj.put("currencySymbol", currencySymbol);
         jsonObj.put("currencySymbolPosition", currencySymbolPosition);
-        jsonObj.put("UILanguage", yamlConfig.getString("UILanguage"));
     }
 
     private void saveJsonConfig(JSONObject jsonObj) {
