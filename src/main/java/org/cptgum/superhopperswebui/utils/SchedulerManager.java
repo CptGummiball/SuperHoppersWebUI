@@ -24,7 +24,7 @@ public class SchedulerManager {
         @Override
         public void run() {
             // Rufe den FileGenerator auf
-            FileGenerator.processYamlFiles();
+            FileGenerator.main(null);
             plugin.getLogger().info("FileGenerator executed!");
         }
     }
