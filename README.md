@@ -34,10 +34,10 @@ Download the SuperHoppers plugin and follow the installation instructions.
 # Configuration file for SuperHoppersWebUI
 # Port for the web server
 Port: 8080
-# Default language of the plugin
-Language: en
 # Update interval in seconds
-Interval: 1800
+Interval: 180
+# Debug Mode (It will show more information in the console, but will also spam your server console)
+DebugMode: false
 
 
 #versions (don't touch)
