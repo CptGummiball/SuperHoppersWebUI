@@ -49,7 +49,8 @@ versions:
 
 ## WebUI
 - The WebUI can be accessed via a web browser with the address `yourserverip:port`
-- You can also get a clickable link via ingame command `/sui`
+- You can also get a clickable link via ingame command `/sui link`
+- You can restart the WebUI to sync currency settings via ingame command `/sui restart`
 
 ## Contributing
 
