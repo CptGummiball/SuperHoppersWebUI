@@ -1,21 +1,21 @@
 package org.cptgum.superhopperswebui.utils.DataManager;
 
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.cptgum.superhopperswebui.Main;
 import org.cptgum.superhopperswebui.utils.LoggerUtils;
 
 import org.json.JSONObject;
-import org.json.JSONTokener;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,61 +25,6 @@ public class ConfigUtils {
 
     public ConfigUtils(Main plugin) {
         this.plugin = plugin;
-    }
-
-    private JSONObject loadJsonConfig() {
-        File configFile = new File(plugin.getDataFolder(), "/web/assets/config.json");
-
-        try (FileReader reader = new FileReader(configFile)) {
-            return new JSONObject(new JSONTokener(reader));
-        } catch (IOException e) {
-            LoggerUtils.logWarning("Json could not be loaded" + e);
-            return new JSONObject();
-        }
-    }
-
-    private void syncValues(FileConfiguration yamlConfig, JSONObject jsonObj, FileConfiguration superHoppersConfig) {
-        // Synchronize the values from SuperHoppers plugin config
-        String currencySymbol = superHoppersConfig.getString("currency");
-        String currencySymbolPosition = superHoppersConfig.getString("currency_before");
-
-        // Map the values from SuperHoppers config to the expected format
-        if (currencySymbolPosition != null) {
-            if (currencySymbolPosition.equalsIgnoreCase("true")) {
-                currencySymbolPosition = "before";
-            } else if (currencySymbolPosition.equalsIgnoreCase("false")) {
-                currencySymbolPosition = "after";
-            }
-        }
-
-        // Set the values in the JSON config
-        jsonObj.put("currencySymbol", currencySymbol);
-        jsonObj.put("currencySymbolPosition", currencySymbolPosition);
-    }
-
-    private void saveJsonConfig(JSONObject jsonObj) {
-        File configFile = new File(plugin.getDataFolder(), "/web/assets/config.json");
-
-        try (FileWriter writer = new FileWriter(configFile)) {
-            jsonObj.write(writer);
-        } catch (IOException e) {
-            LoggerUtils.logWarning("Json could not be saved" + e);
-        }
-    }
-
-    private FileConfiguration getConfig() {
-        return plugin.getConfig();
-    }
-
-    private FileConfiguration getSuperHoppersConfig() {
-        Plugin superHoppersPlugin = Bukkit.getPluginManager().getPlugin("SuperHoppers");
-
-        if (superHoppersPlugin != null) {
-            return superHoppersPlugin.getConfig();
-        } else {
-            LoggerUtils.logWarning("SuperHoppers plugin not found");
-            return null;
-        }
     }
 
     public void pluginconfigupdater(FileConfiguration oldConfig, FileConfiguration newConfig) {
@@ -121,5 +66,54 @@ public class ConfigUtils {
             // Once finished, delete the temporary file
             tempConfigFile.delete();
         }
+    }
+
+    public static void jsonsync() {
+        try {
+            String yamlFilePath = "plugins/SuperHoppers/config.yml";
+            String jsonFilePath = "plugins/SuperHoppersWebUi/web/assets/config.json";
+
+            String existingJsonString = readJsonFile(jsonFilePath);
+            JSONObject existingJsonObject = new JSONObject(existingJsonString);
+
+            Map<String, Object> yamlObject = readYamlFile(yamlFilePath);
+
+            String currencyValue = getValue(yamlObject, "currency");
+            String currencyBeforeValue = getValue(yamlObject, "currency_before");
+
+            existingJsonObject.put("currency", currencyValue);
+            existingJsonObject.put("currency_before", currencyBeforeValue);
+
+            try (FileWriter fileWriter = new FileWriter(jsonFilePath)) {
+                fileWriter.write(existingJsonObject.toString());
+            }
+
+            System.out.println("Synchronisation abgeschlossen.");
+
+        } catch (Exception e) {
+            LoggerUtils.logError("Error while synchronizing config.yml and config.json: " + e);
+        }
+    }
+
+    private static String getValue(Map<String, Object> yamlObject, String key) {
+        if (yamlObject.containsKey(key)) {
+            return yamlObject.get(key).toString();
+        }
+        return null;
+    }
+
+    private static Map<String, Object> readYamlFile(String yamlFilePath) throws Exception {
+        Yaml yaml = new Yaml();
+        try (FileReader reader = new FileReader(yamlFilePath)) {
+            return yaml.load(reader);
+        }
+    }
+
+    private static String readJsonFile(String jsonFilePath) throws Exception {
+        Path path = Paths.get(jsonFilePath);
+        if (Files.exists(path)) {
+            return Files.readString(path);
+        }
+        return "{}";
     }
 }
