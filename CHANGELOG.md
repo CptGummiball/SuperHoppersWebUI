@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2024-02-14
 
 ### Added
+- Commands
+- Translation for Filters
+
+### Fixed
+- FileGenerator
+  - List Cleaner now includes "_"
+
+## [Unreleased] - 2024-02-14
+
+### Added
 
 - DebugLog
 	- Documents every process of the FileGenerator
