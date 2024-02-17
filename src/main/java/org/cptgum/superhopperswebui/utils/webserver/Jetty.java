@@ -8,6 +8,7 @@ import org.cptgum.superhopperswebui.utils.LoggerUtils;
 public class Jetty {
     private static Server server;
 
+
     public static void start(int port) throws Exception {
 
         server = new Server(port);

@@ -15,9 +15,7 @@ public class WebFileUtils {
         {
             //Webfiles
             plugin.saveResource("web/index.html", true);
-            //plugin.saveResource("web/assets/logo.png", true);
-            //plugin.saveResource("web/assets/script.js", true);
-            //plugin.saveResource("web/assets/styles.css", true);
+            plugin.saveResource("web/assets/logo.png", true);
             plugin.saveResource("web/assets/language/de.json", true);
             plugin.saveResource("web/assets/language/en.json", true);
             //Minecraft Item Icons

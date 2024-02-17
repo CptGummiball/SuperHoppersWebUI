@@ -5,3 +5,16 @@ api-version: '1.20'
 author: CptGummiball
 depend: [SuperHoppers]
 load: POSTWORLD
+
+commands:
+  sui:
+    description: 'Main command for SuperHoppersWebUI.'
+    usage: /sui <link|restart>
+
+permissions:
+  sui.link:
+    description: 'Allows to trigger the link command.'
+    default: op
+  sui.restart:
+    description: 'Allows to restart the WebUI Server'
+    default: op

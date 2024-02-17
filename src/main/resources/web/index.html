@@ -6,11 +6,23 @@
   <title>Hopper Overview</title>
   <style>
     body {
-      background-color: #333;
+      background-color: #f35654;
       color: #fff;
       font-family: 'Roboto', sans-serif;
       margin: 0;
       padding: 0;
+    }
+
+    #logoContainer {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+
+    #logoContainer img {
+      width: 50px;
+      height: 50px;
+      border-radius: 5px;
     }
 
     .container {
@@ -74,24 +86,27 @@
   </style>
 </head>
 <body>
-
-<input type="text" id="searchInput" placeholder="Search by ownerName">
-
+<div id="logoContainer">
+  <img src="assets/logo.png" alt="Logo">
+</div>
+<input type="text" id="searchInput" placeholder="Search by Owner">
 <div id="hopperContainer"></div>
 
 <script>
   const hopperContainer = document.getElementById('hopperContainer');
   const searchInput = document.getElementById('searchInput');
   let languageData;
-  let currencySymbol; // Neue Variable für das Währungssymbol
+  let currencySymbol;
+  let position;
 
   // Load language data from config.json
-  fetch('config.json')
+  fetch('assets/config.json')
     .then(response => response.json())
     .then(config => {
       // Assume default language is 'en'
       const lang = config.language || 'en';
-      currencySymbol = config.currency || '$'; // Währungssymbol aus der config.json
+      currencySymbol = config.currency || '$';
+      position = config.currency_before || 'true';
       return fetch(`assets/language/${lang}.json`);
     })
     .then(response => response.json())
@@ -106,7 +121,11 @@
   }
 
   function formatCurrency(amount) {
-    return `${currencySymbol}${amount}`;
+    if (position === 'true') {
+      return `${currencySymbol} ${amount}`;
+    }else if (position === 'false') {
+      return `${amount} ${currencySymbol}`;
+  }
   }
 
       function generateHopperHTML(hopper) {
@@ -129,8 +148,8 @@
             </span>
           </p>
           <p><strong>${translate('Trusted')}:</strong> ${hopper['trust-all'] ? translate('ALL') : hopper.trusted.join(', ')}</p>
-          <p><strong>${translate('Filter Materials')}:</strong> ${hopper.filter_materials ? hopper.filter_materials.join(', ') : translate('None')}</p>
-          <p><strong>${translate('Void Filter')}:</strong> ${hopper.void_filter ? hopper.void_filter.join(', ') : translate('None')}</p>
+          <p><strong>${translate('Filter Materials')}:</strong> ${translate(hopper.filter_materials) ? hopper.filter_materials.join(', ') : translate('None')}</p>
+          <p><strong>${translate('Void Filter')}:</strong> ${translate(hopper.void_filter) ? hopper.void_filter.join(', ') : translate('None')}</p>
         `;
         container.appendChild(hopperInfo);
 
@@ -150,14 +169,14 @@
           // Mob Name und Icon in derselben Zelle
           const cellMob = row.insertCell(0);
 
-          // Füge das Icon neben dem Mob-Namen hinzu
+          // Add Icon to mob name
           const icon = document.createElement('img');
           icon.src = `assets/mobs/${item.mob.toLowerCase()}.png`; // Annahme: Der Dateiname des Icons entspricht dem Mob-Namen
           icon.alt = item.mob;
           icon.className = 'item-icon';
           cellMob.appendChild(icon);
 
-          // Füge den Mob-Namen hinzu
+          // add mob name
           const mobName = document.createElement('span');
           mobName.textContent = translate(item.mob);
           cellMob.appendChild(mobName);
@@ -187,17 +206,19 @@
           const cellWorth = row.insertCell(2);
           const cellTotalWorth = row.insertCell(3);
 
-          // Füge das Icon neben dem Item-Namen hinzu
+          // add icon to item name
           const icon = document.createElement('img');
           icon.src = `assets/items/${item.item.toLowerCase()}.png`; // Annahme: Der Dateiname des Icons entspricht dem Item-Namen
           icon.alt = item.item;
           icon.className = 'item-icon';
           cellItem.appendChild(icon);
 
+          // add item name
           const itemName = document.createElement('span');
           itemName.textContent = translate(item.item);
           cellItem.appendChild(itemName);
 
+          // amount
           cellAmount.textContent = item.amount;
           cellWorth.textContent = formatCurrency(item.worth || 0);
           cellTotalWorth.textContent = formatCurrency(item.total_worth || 0);

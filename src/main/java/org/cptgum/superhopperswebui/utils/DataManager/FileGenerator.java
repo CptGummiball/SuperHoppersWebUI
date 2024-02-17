@@ -133,7 +133,7 @@ public class FileGenerator {
                     List<String> cleanedList = new ArrayList<>();
                     for (String str : stringList) {
                     // Bereinige jeden String in der Liste
-                    String cleanedValue = str.replaceAll("[^a-zA-Z0-9]", "");
+                    String cleanedValue = str.replaceAll("[^a-zA-Z0-9_]", "");
                     cleanedList.add(cleanedValue);
                 }
                 data.put(key, cleanedList);
