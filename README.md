@@ -5,19 +5,16 @@
 
 ## Project Overview
 SuperHoppers Web UI is a user-friendly web interface designed for the Spigot plugin [SuperHoppers](https://www.spigotmc.org/resources/superhoppers.97483/) created by [Bestem0r](https://github.com/Bestem0r). The primary goal of this project is to provide a simple and intuitive way for users to manage and monitor their Super Hoppers within the Minecraft server environment.
-## Planned Features
+## Features
 
-✅ **Live Data:** Nearly Real-time information to keep users updated on the status and performance of their Super Hoppers.
+**Live Data:** Nearly Real-time information to keep users updated on the status and performance of their Super Hoppers.
 
-**Variable Width for Responsive Display:** The UI is designed to adapt to different screen sizes, ensuring a seamless and correct display on all devices.
+**Internal Web Server:** The project includes an internal web server to facilitate communication and data transfer between the Minecraft server and the web interface.
 
-✅ **Internal Web Server:** The project includes an internal web server to facilitate communication and data transfer between the Minecraft server and the web interface.
+**Multi-Language Support:** Language can be changes in the `config.json` included in the web folder
 
-**External Hosting:** Easily deploy the web interface on external hosting platforms for accessibility and convenience.
+**Item Icons:** Integrated icons for a visual representation of items
 
-**Multi-Language Support:** Users can choose from multiple languages to enhance accessibility and user experience.
-
-**Item Icons:** Integrate icons for a visual representation of items, making it easier for users to identify and manage Super Hopper configurations.
 ## Setup
 
 1. **Install SuperHoppers:**
@@ -55,8 +52,6 @@ versions:
 ## Contributing
 
 We welcome contributions and feedback from the community. Feel free to open issues, submit pull requests, or reach out to the project maintainers.
-
-
 
 
 ## Authors
