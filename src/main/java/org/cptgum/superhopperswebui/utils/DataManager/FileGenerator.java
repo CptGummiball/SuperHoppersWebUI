@@ -89,11 +89,14 @@ public class FileGenerator {
             if ("mob".equals(hopperType)) {
                 // Bereinige mob_storage_items
                 cleanMobStorageItems(data);
+                addWorthToMobStorageItems(data);
+                addTotalWorthToData(data);
+                addHopperWorth(data);
             } else {
                 // Bereinige storage_items
                 cleanStorageItems(data);
 
-                // Füge "worth" und "total_worth" zu "storage_items" hinzu
+                // Füge "worth" zu "storage_items" hinzu
                 addWorthToStorageItems(data);
 
                 // Füge "total_worth" für jedes einzelne Item hinzu
@@ -257,6 +260,30 @@ public class FileGenerator {
         }
     }
 
+    private static void addWorthToMobStorageItems(Map<String, Object> data) {
+        try {
+            LoggerUtils.logDebug("Adding worth to storage_items for " + data.get("hopperName"));
+            if (data.containsKey("storage_items")) {
+                Object value = data.get("storage_items");
+                if (value instanceof List<?>) {
+                    List<Map<String, Object>> storageItems = (List<Map<String, Object>>) value;
+                    for (Map<String, Object> storageItem : storageItems) {
+                        if (storageItem.containsKey("item")) {
+                            Object itemValue = storageItem.get("item");
+                            if (itemValue instanceof String) {
+                                String itemType = (String) itemValue;
+                                double worth = getMobPrice(itemType); // Änderung hier
+                                storageItem.put("worth", worth);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LoggerUtils.logError("Error while adding worth to storage items" + e.getMessage());
+        }
+    }
+
     private static double getItemWorth(String itemType) {
         File lootFile = new File("plugins/SuperHoppers/loot.yml");
         try {
@@ -270,6 +297,28 @@ public class FileGenerator {
             }
         } catch (IOException e) {
             LoggerUtils.logError("Error while reading loot.yml: " + e.getMessage());
+        }
+        return 0.0;
+    }
+
+    private static double getMobPrice(String mobType) {
+        File mobsFile = new File("plugins/SuperHoppers/mobs.yml");
+        try {
+            LoggerUtils.logDebug("Reading mobs.yml for " + mobType);
+            Yaml yaml = new Yaml();
+            Map<String, Map<String, Map<String, Double>>> mobsData = yaml.load(new FileInputStream(mobsFile));
+
+            if (mobsData.containsKey("mobs")) {
+                Map<String, Map<String, Double>> mobsMap = mobsData.get("mobs");
+                if (mobsMap.containsKey(mobType)) {
+                    Map<String, Double> mobValues = mobsMap.get(mobType);
+                    return mobValues.getOrDefault("price", 0.0);
+                } else {
+                    LoggerUtils.logDebug("Mob type not found in mobs.yml: " + mobType);
+                }
+            }
+        } catch (IOException e) {
+            LoggerUtils.logError("Error while reading mobs.yml: " + e.getMessage());
         }
         return 0.0;
     }
