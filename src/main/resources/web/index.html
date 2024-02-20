@@ -15,6 +15,7 @@
 
     #logoContainer {
       position: absolute;
+      margin-right: 10px;
       top: 10px;
       right: 10px;
     }
@@ -35,6 +36,7 @@
 
     #searchInput {
       margin: 10px;
+      margin-left: 20px;
       padding: 10px;
       border: none;
       border-radius: 5px;
@@ -50,6 +52,8 @@
     }
 
     .hopper-name {
+      color: orange;
+      font-weight: bold;
       font-size: 24px;
       margin-bottom: 10px;
     }
@@ -99,6 +103,14 @@
   let currencySymbol;
   let position;
 
+   // Funktion zum Parsen von URL-Parametern
+   function getUrlParameter(name) {
+      name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+      const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+      const results = regex.exec(location.search);
+      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+   }
+
   // Load language data from config.json
   fetch('assets/config.json')
     .then(response => response.json())
@@ -140,7 +152,15 @@
         const hopperInfo = document.createElement('div');
         hopperInfo.classList.add('hopper-info');
         hopperInfo.innerHTML = `
-          <p><strong>${translate('Hopper Type')}:</strong> ${hopper.hopperType}</p>
+          <p><strong>${translate('Hopper Type')}:</strong>
+			${
+			hopper.hopperType === 'mob'
+			? `<img src="/assets/mobs/zombie.png" alt="Mob" class="item-icon">`
+			: hopper.hopperType === 'item'
+			? `<img src="/assets/items/carrot.png" alt="Item" class="item-icon">`
+			: hopper.hopperType
+			}
+		  </p>
           <p><strong>${translate('Owner')}:</strong> ${hopper.ownerName}</p>
           <p><strong>${translate('Auto-sell')}:</strong>
             <span class="${hopper['auto-sell'] ? 'green' : 'red'}">
@@ -148,8 +168,8 @@
             </span>
           </p>
           <p><strong>${translate('Trusted')}:</strong> ${hopper['trust-all'] ? translate('ALL') : hopper.trusted.join(', ')}</p>
-          <p><strong>${translate('Filter Materials')}:</strong> ${translate(hopper.filter_materials) ? hopper.filter_materials.join(', ') : translate('None')}</p>
-          <p><strong>${translate('Void Filter')}:</strong> ${translate(hopper.void_filter) ? hopper.void_filter.join(', ') : translate('None')}</p>
+          <p><strong>${translate('Filter Materials')}:</strong> ${hopper.filter_materials ? hopper.filter_materials.map(item => translate(item)).join(', ') : translate('None')}</p>
+          <p><strong>${translate('Void Filter')}:</strong> ${hopper.void_filter ? hopper.void_filter.map(item => translate(item)).join(', ') : translate('None')}</p>
         `;
         container.appendChild(hopperInfo);
 
@@ -254,6 +274,13 @@
       searchInput.addEventListener('input', () => {
         renderHoppers(searchInput.value);
       });
+
+   // Wenn ein Suchparameter in der URL vorhanden ist, setze ihn als Wert im Suchfeld
+      const searchQueryParam = getUrlParameter('search');
+      if (searchQueryParam) {
+      searchInput.value = searchQueryParam;
+      renderHoppers(searchQueryParam);
+      }
 </script>
 
 </body>
