@@ -92,9 +92,9 @@ public final class Main extends JavaPlugin {
                         String serverIP = FetchIP.getIP();
                         int webServerPort = getConfig().getInt("web-server-port");
 
-                        String url = "http://" + serverIP + ":" + webServerPort;
+                        String url = "http://" + serverIP + ":" + webServerPort + "/?search=" + sender.getName();
 
-                        String clickMessage = "Click here to open the web server.";
+                        String clickMessage = "Click here to open the SuperHopperWebUI.";
 
                         TextComponent clickableUrl = new TextComponent(clickMessage);
                         clickableUrl.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
