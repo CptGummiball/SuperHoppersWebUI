@@ -18,6 +18,9 @@ public class WebFileUtils {
             plugin.saveResource("web/assets/logo.png", true);
             plugin.saveResource("web/assets/language/de.json", true);
             plugin.saveResource("web/assets/language/en.json", true);
+            plugin.saveResource("web/assets/config.json", true);
+            //plugin.saveResource("web/assets/script.js", true);
+            //plugin.saveResource("web/assest/style.css", true);
             //Minecraft Item Icons
             plugin.saveResource("web/assets/items/acacia_boat.png", true);
             plugin.saveResource("web/assets/items/acacia_button.png", true);
