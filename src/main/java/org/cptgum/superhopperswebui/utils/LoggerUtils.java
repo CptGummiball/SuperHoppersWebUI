@@ -4,6 +4,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -41,20 +42,39 @@ public class LoggerUtils {
     }
 
     private static void writeErrorToFile(String message) {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(ERROR_LOG_PATH, true))) {
-            String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-            writer.println(timestamp + " - " + message);
+        try {
+            checkAndResetFile(ERROR_LOG_PATH);
+            try (PrintWriter writer = new PrintWriter(new FileWriter(ERROR_LOG_PATH, true))) {
+                String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+                writer.println(timestamp + " - " + message);
+            }
         } catch (IOException e) {
-            e.printStackTrace(); // Log the error, not be replaceable by logger output because it is an internal error of the logger
+            e.printStackTrace(); // Log the error, not replaceable by logger output because it is an internal error of the logger
         }
     }
 
     private static void writeDebugToFile(String message) {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(DEBUG_LOG_PATH, true))) {
-            String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-            writer.println(timestamp + " - " + message);
+        try {
+            checkAndResetFile(DEBUG_LOG_PATH);
+            try (PrintWriter writer = new PrintWriter(new FileWriter(DEBUG_LOG_PATH, true))) {
+                String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+                writer.println(timestamp + " - " + message);
+            }
         } catch (IOException e) {
-            e.printStackTrace(); // Log the error, not be replaceable by logger output because it is an internal error of the logger
+            e.printStackTrace(); // Log the error, not replaceable by logger output because it is an internal error of the logger
+        }
+    }
+
+    private static void checkAndResetFile(String filePath) throws IOException {
+        File file = new File(filePath);
+        if (file.length() > 5 * 1024 * 1024) { // Check if file size is greater than 5 MB
+            resetFile(file);
+        }
+    }
+
+    private static void resetFile(File file) throws IOException {
+        try (PrintWriter writer = new PrintWriter(file)) {
+            // This will truncate the file and effectively empty it
         }
     }
 
