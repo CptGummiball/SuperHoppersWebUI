@@ -11,7 +11,7 @@ SuperHoppers Web UI is a user-friendly web interface designed for the Spigot plu
 
 **Internal Web Server:** The project includes an internal web server to facilitate communication and data transfer between the Minecraft server and the web interface.
 
-**Multi-Language Support:** Language can be changes in the `config.json` included in the web folder
+**Multi-Language Support:** Language can be changed in the `config.json` included in the web folder (Currently `en` and `de`)
 
 **Item Icons:** Integrated icons for a visual representation of items
 
