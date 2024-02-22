@@ -177,84 +177,85 @@
           const mobsTable = document.createElement('table');
           mobsTable.classList.add('item-table');
           mobsTable.innerHTML = `
-          <tr>
-              <th>${translate('Mob')}</th>
-              <th>${translate('Amount')}</th>
-          </tr>
-          `;
-
-          hopper.storage_items.forEach(item => {
-          const row = mobsTable.insertRow();
-
-          // Mob Name und Icon in derselben Zelle
-          const cellMob = row.insertCell(0);
-
-          // Add Icon to mob name
-          const icon = document.createElement('img');
-          icon.src = `assets/mobs/${item.mob.toLowerCase()}.png`; // Annahme: Der Dateiname des Icons entspricht dem Mob-Namen
-          icon.alt = item.mob;
-          icon.className = 'item-icon';
-          cellMob.appendChild(icon);
-
-          // add mob name
-          const mobName = document.createElement('span');
-          mobName.textContent = translate(item.mob);
-          cellMob.appendChild(mobName);
-
-          // Amount
-          const cellAmount = row.insertCell(1);
-          cellAmount.textContent = item.amount;
-          });
-
-          container.appendChild(mobsTable);
-        } else {
-          const itemsTable = document.createElement('table');
-          itemsTable.classList.add('item-table');
-          itemsTable.innerHTML = `
             <tr>
-              <th>${translate('Item')}</th>
+              <th>${translate('Mob')}</th>
               <th>${translate('Amount')}</th>
               <th>${translate('Worth')}</th>
               <th>${translate('Total Worth')}</th>
             </tr>
           `;
 
-          hopper.storage_items.forEach(item => {
+        hopper.storage_items.forEach(item => {
+          const row = mobsTable.insertRow();
+          const cellMob = row.insertCell(0);
+          const cellAmount = row.insertCell(1);
+          const cellWorth = row.insertCell(2);
+          const cellTotalWorth = row.insertCell(3);
+
+          const icon = document.createElement('img');
+          icon.src = `assets/mobs/${item.mob.toLowerCase()}.png`;
+          icon.alt = item.mob;
+          icon.className = 'item-icon';
+          cellMob.appendChild(icon);
+
+          const mobName = document.createElement('span');
+          mobName.textContent = translate(item.mob);
+          cellMob.appendChild(mobName);
+
+          cellAmount.textContent = item.amount;
+          cellWorth.textContent = formatCurrency(item.worth || 0);
+          cellTotalWorth.textContent = formatCurrency(item.total_worth || 0);
+        });
+
+        container.appendChild(mobsTable);
+
+        // Hopper Worth für Hoppertyp "mob"
+        const hopperWorth = document.createElement('p');
+        hopperWorth.innerHTML = `<strong>${translate('Hopper Worth')}:</strong> ${formatCurrency(hopper.hopperWorth || 0)}`;
+        container.appendChild(hopperWorth);
+      } else {
+        const itemsTable = document.createElement('table');
+        itemsTable.classList.add('item-table');
+        itemsTable.innerHTML = `
+          <tr>
+            <th>${translate('Item')}</th>
+            <th>${translate('Amount')}</th>
+            <th>${translate('Worth')}</th>
+            <th>${translate('Total Worth')}</th>
+          </tr>
+        `;
+
+        hopper.storage_items.forEach(item => {
           const row = itemsTable.insertRow();
           const cellItem = row.insertCell(0);
           const cellAmount = row.insertCell(1);
           const cellWorth = row.insertCell(2);
           const cellTotalWorth = row.insertCell(3);
 
-          // add icon to item name
           const icon = document.createElement('img');
-          icon.src = `assets/items/${item.item.toLowerCase()}.png`; // Annahme: Der Dateiname des Icons entspricht dem Item-Namen
+          icon.src = `assets/items/${item.item.toLowerCase()}.png`;
           icon.alt = item.item;
           icon.className = 'item-icon';
           cellItem.appendChild(icon);
 
-          // add item name
           const itemName = document.createElement('span');
           itemName.textContent = translate(item.item);
           cellItem.appendChild(itemName);
 
-          // amount
           cellAmount.textContent = item.amount;
           cellWorth.textContent = formatCurrency(item.worth || 0);
           cellTotalWorth.textContent = formatCurrency(item.total_worth || 0);
-          });
+        });
 
-          container.appendChild(itemsTable);
+        container.appendChild(itemsTable);
 
-          if (hopper.hopperType === 'item') {
-            const hopperWorth = document.createElement('p');
-            hopperWorth.innerHTML = `<strong>${translate('Hopper Worth')}:</strong> ${formatCurrency(hopper.hopperWorth)}`;
-            container.appendChild(hopperWorth);
-          }
-        }
-
-        return container;
+        const hopperWorth = document.createElement('p');
+        hopperWorth.innerHTML = `<strong>${translate('Hopper Worth')}:</strong> ${formatCurrency(hopper.hopperWorth)}`;
+        container.appendChild(hopperWorth);
       }
+
+      return container;
+    }
 
       function renderHoppers(filter = '') {
         hopperContainer.innerHTML = '';
