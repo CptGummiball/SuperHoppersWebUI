@@ -14,6 +14,7 @@ public class FileGenerator {
         generateOutputJson();
     }
 
+    // generate output
     private static void generateOutputJson() {
         try {
         File itemFolder = new File("plugins/SuperHoppers/hoppers/item");
@@ -30,6 +31,7 @@ public class FileGenerator {
     }
     }
 
+    // process folder
     private static void processFolder(File folder, List<Map<String, Object>> result, String hopperType) {
         try {
 
@@ -46,6 +48,7 @@ public class FileGenerator {
         }
     }
 
+    // start processing
     private static void processYaml(File file, List<Map<String, Object>> result, String hopperType) {
         try {
             Yaml yaml = new Yaml();
@@ -61,48 +64,50 @@ public class FileGenerator {
         }
     }
 
+    // read file
     private static Reader FileReader(File file) throws IOException {
         return new FileReader(file);
     }
 
+    // process the YAML data
     private static void cleanAndProcessData(Map<String, Object> data, String hopperType) {
         try {
-            // Bereinige Strings
+            // clean Strings
             cleanString(data, "hopperName");
             cleanStringList(data, "trusted");
             cleanStringList(data, "void_filter");
 
-            // Entferne "hologram_entities"
+            // delete "hologram_entities"
             LoggerUtils.logDebug("Removing hologram_entities for " + data.get("hopperName"));
             data.remove("hologram_entities");
 
-            // Setze hopperType
+            // Set hopperType
             LoggerUtils.logDebug("Setting hopperType for " + data.get("hopperName"));
             data.put("hopperType", hopperType);
 
-            // Erstelle UUIDs
+            // generate UUIDs
             createUUID(data, "hopperUUID");
 
-            // Bereinige filter_materials und storage_items
+            // clean filter_materials und storage_items
             cleanFilterMaterials(data);
 
             if ("mob".equals(hopperType)) {
-                // Bereinige mob_storage_items
+                // clean mob_storage_items
                 cleanMobStorageItems(data);
+                // add worth to mob_storage_items
                 addWorthToMobStorageItems(data);
+                // add total worth to data
                 addTotalWorthToData(data);
+                // add hopper worth
                 addHopperWorth(data);
             } else {
-                // Bereinige storage_items
+                // clean storage_items
                 cleanStorageItems(data);
-
-                // Füge "worth" zu "storage_items" hinzu
+                // add worth to storage_items
                 addWorthToStorageItems(data);
-
-                // Füge "total_worth" für jedes einzelne Item hinzu
+                // add total worth to data
                 addTotalWorthToData(data);
-
-                // Füge "hopperWorth" hinzu
+                // add hopper worth
                 addHopperWorth(data);
             }
         } catch (Exception e) {
@@ -110,6 +115,7 @@ public class FileGenerator {
         }
     }
 
+    // clean Strings
     private static void cleanString(Map<String, Object> data, String key) {
         try {
             LoggerUtils.logDebug("Cleaning data for " + data.get("hopperName"));
@@ -126,6 +132,7 @@ public class FileGenerator {
         }
     }
 
+    // clean String Lists
     private static void cleanStringList(Map<String, Object> data, String key) {
         try {
             LoggerUtils.logDebug("Cleaning " + key + " list for " + data.get("hopperName"));
@@ -147,6 +154,7 @@ public class FileGenerator {
         }
     }
 
+    // generate UUID
     private static void createUUID(Map<String, Object> data, String key) {
         try {
             LoggerUtils.logDebug("Creating UUID for " + data.get("hopperName"));
@@ -160,6 +168,7 @@ public class FileGenerator {
         }
     }
 
+    // clean filter_materials
     private static void cleanFilterMaterials(Map<String, Object> data) {
         try {
             LoggerUtils.logDebug("Cleaning filter_materials for " + data.get("hopperName"));
@@ -181,6 +190,7 @@ public class FileGenerator {
         }
     }
 
+    // clean mob_storage_items
     private static void cleanMobStorageItems(Map<String, Object> data) {
         try {
             LoggerUtils.logDebug("Cleaning mob_storage_items for " + data.get("hopperName"));
@@ -208,6 +218,7 @@ public class FileGenerator {
         }
     }
 
+    // clean storage_items
     private static void cleanStorageItems(Map<String, Object> data) {
         try {
             LoggerUtils.logDebug("Cleaning storage_items for " + data.get("hopperName"));
@@ -236,6 +247,7 @@ public class FileGenerator {
         }
     }
 
+    // add worth to storage_items
     private static void addWorthToStorageItems(Map<String, Object> data) {
         try {
             LoggerUtils.logDebug("Adding worth to storage_items for " + data.get("hopperName"));
@@ -260,6 +272,7 @@ public class FileGenerator {
         }
     }
 
+    // add worth to mob_storage_items
     private static void addWorthToMobStorageItems(Map<String, Object> data) {
         try {
             LoggerUtils.logDebug("Adding worth to storage_items for " + data.get("hopperName"));
@@ -272,7 +285,7 @@ public class FileGenerator {
                             Object itemValue = storageItem.get("item");
                             if (itemValue instanceof String) {
                                 String itemType = (String) itemValue;
-                                double worth = getMobPrice(itemType); // Änderung hier
+                                double worth = getMobPrice(itemType);
                                 storageItem.put("worth", worth);
                             }
                         }
@@ -284,6 +297,7 @@ public class FileGenerator {
         }
     }
 
+    // get item worth
     private static double getItemWorth(String itemType) {
         File lootFile = new File("plugins/SuperHoppers/loot.yml");
         try {
@@ -301,6 +315,7 @@ public class FileGenerator {
         return 0.0;
     }
 
+    // get mob price
     private static double getMobPrice(String mobType) {
         File mobsFile = new File("plugins/SuperHoppers/mobs.yml");
         try {
@@ -323,6 +338,7 @@ public class FileGenerator {
         return 0.0;
     }
 
+    // add total worth to data
     private static void addTotalWorthToData(Map<String, Object> data) {
         try {
             LoggerUtils.logDebug("Adding total worth to data for " + data.get("hopperName"));
@@ -345,6 +361,7 @@ public class FileGenerator {
         }
     }
 
+    // add hopper worth
     private static void addHopperWorth(Map<String, Object> data) {
         double hopperWorth = 0.0;
         try {
@@ -368,6 +385,7 @@ public class FileGenerator {
         }
     }
 
+    // write to json file
     private static void writeToJsonFile(List<Map<String, Object>> dataList, String outputPath) {
         try (FileWriter writer = new FileWriter(outputPath)) {
             LoggerUtils.logDebug("Writing to JSON file: " + outputPath);
